@@ -30,3 +30,12 @@ after_success:
   - docker push polya/docker-backend
   - docker push polya/docker-nginx
 
+deploy:
+  provider: elasticbeanstalk
+  region: "ap-northeast-2"
+  app: "docker-fullstack-app"
+  env: "DockerFullstackApp-env"
+  bucket_name: "elasticbeanstalk-ap-northeast-2-709296188990"
+  bucket_path: "docker-fullstack-app"
+  on:
+    branch: master
