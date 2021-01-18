@@ -1,0 +1,32 @@
+# 언어 설정
+language: generic
+
+# 관리자 권한
+sudo: required 
+
+ # 도커환경
+services:  
+  - docker
+
+# 앱을 도커 환경에서 실행하고 있으니 travis ci에게 도커환경으로 만들것이라고 선언 >> 구성된 도커 환경에서 Dockerfile.dev를 이용해 도커 이미지 생성
+before_install:
+  - docker build -t polya/react-test-app -f ./frontend/Dockerfile.dev ./frontend
+
+# 생성된 테스트 이미지를 이용해서 테스트 수행
+script:
+  - docker run -e CI=true polya/react-test-app npm run test
+
+# 테스트가 성공했다면 하나하나의 프로젝트의 운영버전 이미지를 빌드하는 설정해주기
+after_success:
+  - docker build -t polya/docker-frontend ./frontend
+  - docker build -t polya/docker-backend ./backend
+  - docker build -t polya/docker-nginx ./nginx
+
+# 도커 허브에 빌드된 파일을 넣어주기 위해 도커 허브에 로그인 
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+
+# 빌드된 이미지들을 도커허브에 push
+  - docker push polya/docker-frontend
+  - docker push polya/docker-backend
+  - docker push polya/docker-nginx
+
